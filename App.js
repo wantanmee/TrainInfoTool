@@ -1,8 +1,9 @@
 import React from 'react';
-import { FlatList, ActivityIndicator, Text, View, Picker  } from 'react-native';
+import { FlatList, ActivityIndicator, Text, View, Picker, Button  } from 'react-native';
 
 const HOST = "https://kyfw.12306.cn";
 const INIT_PAGE_PATH = "/otn/leftTicket/init";
+const LEFT_TICKET_PATH = "/otn/leftTicket/queryZ";
 export default class Train extends React.Component {
 
   constructor(props){
@@ -10,8 +11,9 @@ export default class Train extends React.Component {
     this.state ={ 
       isLoading: false,
       stations: [],
-      origin: "", 
-      end: ""
+      origin: {}, 
+      end: {},
+      enableCheckLeftTicket: false
     }
   }
 
@@ -60,20 +62,30 @@ export default class Train extends React.Component {
         });
       });
   }
-  handleOriginStationChange(value, index) {   
+  handleOriginStationChange(value, index) {
     this.setState({
       ...this.state,
       origin: this.state.stations[index]
-    });
+    }, () => this.checkEnableLeftTicketStatus());    
+    
   }
   handleEndStationChange(value, index) {   
     this.setState({
       ...this.state,
       end: this.state.stations[index]
-    });
+    }, () => this.checkEnableLeftTicketStatus());
+  }
+  checkEnableLeftTicketStatus() {
+    this.setState({
+      ...this.state,
+      enableCheckLeftTicket: !!this.state.origin && !!this.state.end
+    });    
   }
   buildStationPickerItem() {
     return this.state.stations.map(station => (<Picker.Item label={station.name} value={station.key} key={station.key} />));
+  }
+  handleCheckLeftTicket() {
+    console.log('check ticket!');
   }
   render(){
     if(this.state.isLoading){
@@ -96,6 +108,11 @@ export default class Train extends React.Component {
           onValueChange={this.handleEndStationChange.bind(this)}>
           {this.buildStationPickerItem()}
         </Picker>
+        <Button 
+          disabled={!this.state.enableCheckLeftTicket}
+          onPress={this.handleCheckLeftTicket.bind(this)}
+          title="查询余票"         
+        />
       </View>
     );
   }
